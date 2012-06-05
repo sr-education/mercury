@@ -73,11 +73,12 @@ class @Mercury.Snippet
       data: sendData
       success: (data) =>
         if data.element
-          new_elem = jQuery(data.element)
-          attrs = {}
-          jQuery.each( element[0].attributes, (index,attr) ->
-            attrs[attr.name]=attr.value )
-          element.replaceWith(new_elem.attr(attrs))
+          if !layoutSnippet
+            new_elem = jQuery(data.element)
+            attrs = {}
+            jQuery.each( element[0].attributes, (index,attr) ->
+              attrs[attr.name]=attr.value )
+            element.replaceWith(new_elem.attr(attrs))
           @data = data.elementHtml
           new_elem.html(data.elementHtml)
           element = new_elem
