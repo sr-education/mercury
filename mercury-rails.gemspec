@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('jquery-rails')
   s.add_development_dependency('sqlite3')
   s.add_development_dependency('ruby-debug19')
-  s.add_development_dependency('sprockets-helpers')
+  s.add_development_dependency('sprockets-rails')
 
   s.add_development_dependency('rspec-core', '>= 2.8.0')
   s.add_development_dependency('evergreen', '>= 1.0.0')
