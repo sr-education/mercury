@@ -65,8 +65,18 @@ class @Mercury.Snippet
       type: Mercury.config.snippets.method
       data: @options
       success: (data) =>
-        @data = data
-        element.html(data)
+        if data.element
+          new_elem = jQuery(data.element)
+          attrs = {}
+          jQuery.each( element[0].attributes, (index,attr) ->
+            attrs[attr.name]=attr.value )
+          element.replaceWith(new_elem.attr(attrs))
+          @data = data.elementHtml
+          new_elem.html(data.elementHtml)
+          element = new_elem
+        else
+          @data = data
+          element.html(data)
         callback() if callback
       error: =>
         Mercury.notify('Error loading the preview for the \"%s\" snippet.', @name)
