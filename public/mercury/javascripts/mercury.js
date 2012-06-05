@@ -271,7 +271,7 @@ window.Mercury = {
     snippets: {
       method: 'POST',
       optionsUrl: '/mercury/snippets/:name/options.html',
-      previewUrl: '/mercury/snippets/:name/preview.json'
+      previewUrl: '/mercury/snippets/:name/preview.html'
       },
 
 
@@ -16230,19 +16230,38 @@ Showdown.converter = function() {
       return element;
     };
 
+    Snippet.prototype.getStaticHTML = function(element, callback) {
+      if (callback == null) {
+        callback = null;
+      }
+      element.html("[" + this.identity + "]");
+      this.loadPreview(element, callback, true);
+      return element;
+    };
+
     Snippet.prototype.getText = function(callback) {
       return "[--" + this.identity + "--]";
     };
 
-    Snippet.prototype.loadPreview = function(element, callback) {
-      var _this = this;
+    Snippet.prototype.loadPreview = function(element, callback, layoutSnippet) {
+      var sendData,
+        _this = this;
       if (callback == null) {
         callback = null;
+      }
+      if (layoutSnippet == null) {
+        layoutSnippet = false;
+      }
+      sendData = this.options;
+      if (layoutSnippet) {
+        sendData = jQuery.extend({}, this.options, {
+          layoutSnippet: true
+        });
       }
       return jQuery.ajax(Mercury.config.snippets.previewUrl.replace(':name', this.name), {
         headers: Mercury.ajaxHeaders(),
         type: Mercury.config.snippets.method,
-        data: this.options,
+        data: sendData,
         success: function(data) {
           var attrs, new_elem;
           if (data.element) {
@@ -16276,6 +16295,18 @@ Showdown.converter = function() {
         handler: 'insertSnippet',
         loadType: Mercury.config.snippets.method,
         loadData: this.options
+      });
+    };
+
+    Snippet.prototype.displayStaticOptions = function() {
+      Mercury.snippet = this;
+      return Mercury.modal(Mercury.config.snippets.optionsUrl.replace(':name', this.name), {
+        title: 'Snippet Options',
+        handler: 'insertSnippet',
+        loadType: Mercury.config.snippets.method,
+        loadData: jQuery.extend({}, this.options, {
+          layoutSnippet: true
+        })
       });
     };
 
@@ -19425,18 +19456,12 @@ Showdown.converter = function() {
         return this.content(this.history.redo());
       },
       insertSnippet: function(options) {
-        var existing, snippet,
+        var snippet,
           _this = this;
         snippet = options.value;
-        if ((existing = this.element.find("[data-snippet=" + snippet.identity + "]")).length) {
-          return existing.replaceWith(snippet.getHTML(this.document, function() {
-            return _this.pushHistory();
-          }));
-        } else {
-          return this.element.append(snippet.getHTML(this.document, function() {
-            return _this.pushHistory();
-          }));
-        }
+        return snippet.getStaticHTML(this.element, function() {
+          return _this.pushHistory();
+        });
       },
       editSnippet: function() {
         var snippet;
@@ -19444,7 +19469,7 @@ Showdown.converter = function() {
           return;
         }
         snippet = Mercury.Snippet.find(this.snippet.data('snippet'));
-        return snippet.displayOptions();
+        return snippet.displayStaticOptions();
       },
       removeSnippet: function() {}
     };

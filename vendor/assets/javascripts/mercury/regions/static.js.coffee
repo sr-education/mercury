@@ -100,15 +100,12 @@ class @Mercury.Regions.Static extends Mercury.Region
 
     insertSnippet: (options) ->
       snippet = options.value
-      if (existing = @element.find("[data-snippet=#{snippet.identity}]")).length
-        existing.replaceWith(snippet.getHTML(@document, => @pushHistory()))
-      else
-        @element.append(snippet.getHTML(@document, => @pushHistory()))
+      snippet.getStaticHTML(@element, => @pushHistory())
 
     editSnippet: ->
       return unless @snippet
       snippet = Mercury.Snippet.find(@snippet.data('snippet'))
-      snippet.displayOptions()
+      snippet.displayStaticOptions()
 
     removeSnippet: ->
       #@snippet.remove() if @snippet

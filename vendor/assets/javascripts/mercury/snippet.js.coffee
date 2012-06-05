@@ -54,16 +54,23 @@ class @Mercury.Snippet
     @loadPreview(element, callback)
     return element
 
+  getStaticHTML: (element, callback = null) ->
+    element.html("[#{@identity}]")
+    @loadPreview(element, callback, true)
+    return element
 
   getText: (callback) ->
     return "[--#{@identity}--]"
 
 
-  loadPreview: (element, callback = null) ->
+  loadPreview: (element, callback = null, layoutSnippet = false) ->
+    sendData = @options
+    if layoutSnippet
+      sendData = jQuery.extend({}, @options, {layoutSnippet: true})
     jQuery.ajax Mercury.config.snippets.previewUrl.replace(':name', @name), {
       headers: Mercury.ajaxHeaders()
       type: Mercury.config.snippets.method
-      data: @options
+      data: sendData
       success: (data) =>
         if data.element
           new_elem = jQuery(data.element)
@@ -90,6 +97,15 @@ class @Mercury.Snippet
       handler: 'insertSnippet',
       loadType: Mercury.config.snippets.method,
       loadData: @options
+    }
+
+  displayStaticOptions: ->
+    Mercury.snippet = @
+    Mercury.modal Mercury.config.snippets.optionsUrl.replace(':name', @name), {
+      title: 'Snippet Options',
+      handler: 'insertSnippet',
+      loadType: Mercury.config.snippets.method,
+      loadData: jQuery.extend({}, @options, {layoutSnippet: true})
     }
 
 
