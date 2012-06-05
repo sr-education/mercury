@@ -25,6 +25,7 @@
 #= require ./tooltip
 #= require ./snippet
 #= require ./snippet_toolbar
+#= require ./static_snippet_toolbar
 #= require ./region
 #= require ./uploader
 #= require_tree ./regions

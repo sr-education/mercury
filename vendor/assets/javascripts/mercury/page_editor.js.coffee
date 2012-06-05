@@ -95,6 +95,8 @@ class @Mercury.PageEditor
     @santizerElement.appendTo(@options.appendTo ? @document.find('body'))
 
     @snippetToolbar = new Mercury.SnippetToolbar(@document)
+    
+    @statisSnippetToolbar = new Mercury.StaticSnippetToolbar(@document)
 
     @hijackLinksAndForms()
     Mercury.trigger('mode', {mode: 'preview'}) unless @options.visible

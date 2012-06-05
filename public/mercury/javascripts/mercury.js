@@ -213,6 +213,13 @@ window.Mercury = {
           sep1:                ' ',
           removeSnippet:       ['Remove Snippet']
           }
+        },
+
+      staticSnippetable: {
+        _custom:               true,
+        actions:               {
+          editSnippet:         ['Edit Snippet Settings']
+          }
         }
       },
 
@@ -13617,6 +13624,7 @@ Showdown.converter = function() {
       });
       this.santizerElement.appendTo((_ref = this.options.appendTo) != null ? _ref : this.document.find('body'));
       this.snippetToolbar = new Mercury.SnippetToolbar(this.document);
+      this.statisSnippetToolbar = new Mercury.StaticSnippetToolbar(this.document);
       this.hijackLinksAndForms();
       if (!this.options.visible) {
         return Mercury.trigger('mode', {
@@ -16430,6 +16438,131 @@ Showdown.converter = function() {
 
 }).call(this);
 (function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  this.Mercury.StaticSnippetToolbar = (function(_super) {
+
+    __extends(StaticSnippetToolbar, _super);
+
+    function StaticSnippetToolbar(document, options) {
+      this.document = document;
+      this.options = options != null ? options : {};
+      StaticSnippetToolbar.__super__.constructor.call(this, this.options);
+    }
+
+    StaticSnippetToolbar.prototype.build = function() {
+      var button, buttonName, options, _ref, _ref1, _results;
+      this.element = jQuery('<div>', {
+        "class": 'mercury-toolbar mercury-snippet-toolbar',
+        style: 'display:none'
+      });
+      this.element.appendTo((_ref = jQuery(this.options.appendTo).get(0)) != null ? _ref : 'body');
+      _ref1 = Mercury.config.toolbars.staticSnippetable;
+      _results = [];
+      for (buttonName in _ref1) {
+        if (!__hasProp.call(_ref1, buttonName)) continue;
+        options = _ref1[buttonName];
+        button = this.buildButton(buttonName, options);
+        if (button) {
+          _results.push(button.appendTo(this.element));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
+
+    StaticSnippetToolbar.prototype.bindEvents = function() {
+      var _this = this;
+      Mercury.on('show:staticToolbar', function(event, options) {
+        if (!options.snippet) {
+          return;
+        }
+        options.snippet.mouseout(function() {
+          return _this.hide();
+        });
+        return _this.show(options.snippet);
+      });
+      Mercury.on('hide:staticToolbar', function(event, options) {
+        if (!(options.type && options.type === 'snippet')) {
+          return;
+        }
+        return _this.hide(options.immediately);
+      });
+      this.element.mousemove(function() {
+        return clearTimeout(_this.hideTimeout);
+      });
+      this.element.mouseout(function() {
+        return _this.hide();
+      });
+      return jQuery(this.document).on('scroll', function() {
+        if (_this.visible) {
+          return _this.position();
+        }
+      });
+    };
+
+    StaticSnippetToolbar.prototype.show = function(snippet) {
+      this.snippet = snippet;
+      Mercury.tooltip.hide();
+      this.position();
+      return this.appear();
+    };
+
+    StaticSnippetToolbar.prototype.position = function() {
+      var left, offset, top;
+      offset = this.snippet.offset();
+      top = offset.top + Mercury.displayRect.top - jQuery(this.document).scrollTop() - this.height() + 10;
+      left = offset.left - jQuery(this.document).scrollLeft();
+      return this.element.css({
+        top: top,
+        left: left
+      });
+    };
+
+    StaticSnippetToolbar.prototype.appear = function() {
+      clearTimeout(this.hideTimeout);
+      if (this.visible) {
+        return;
+      }
+      this.visible = true;
+      this.element.css({
+        display: 'block',
+        opacity: 0
+      });
+      return this.element.stop().animate({
+        opacity: 1
+      }, 200, 'easeInOutSine');
+    };
+
+    StaticSnippetToolbar.prototype.hide = function(immediately) {
+      var _this = this;
+      if (immediately == null) {
+        immediately = false;
+      }
+      clearTimeout(this.hideTimeout);
+      if (immediately) {
+        this.element.hide();
+        return this.visible = false;
+      } else {
+        return this.hideTimeout = setTimeout(500, function() {
+          _this.element.stop().animate({
+            opacity: 0
+          }, 300, 'easeInOutSine', function() {
+            return _this.element.hide();
+          });
+          return _this.visible = false;
+        });
+      }
+    };
+
+    return StaticSnippetToolbar;
+
+  })(Mercury.Toolbar);
+
+}).call(this);
+(function() {
 
   this.Mercury.Region = (function() {
     var type;
@@ -19120,6 +19253,203 @@ Showdown.converter = function() {
     };
 
     return Snippetable;
+
+  })(Mercury.Region);
+
+}).call(this);
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  this.Mercury.Regions.Static = (function(_super) {
+    var type;
+
+    __extends(Static, _super);
+
+    Static.supported = document.getElementById;
+
+    Static.supportedText = "IE 7+, Chrome 10+, Firefox 4+, Safari 5+, Opera 8+";
+
+    type = 'static';
+
+    function Static(element, window, options) {
+      this.element = element;
+      this.window = window;
+      this.options = options != null ? options : {};
+      this.type = 'static';
+      Static.__super__.constructor.apply(this, arguments);
+    }
+
+    Static.prototype.build = function() {
+      if (this.element.css('minHeight') === '0px') {
+        return this.element.css({
+          minHeight: 20
+        });
+      }
+    };
+
+    Static.prototype.bindEvents = function() {
+      var _this = this;
+      Static.__super__.bindEvents.apply(this, arguments);
+      this.element.on('mousemove', function(event) {
+        var snippet;
+        if (_this.previewing || Mercury.region !== _this) {
+          return;
+        }
+        snippet = jQuery(event.target).closest('.mercury-snippet');
+        if (snippet.length) {
+          _this.snippet = snippet;
+          Mercury.trigger('hide:toolbar', {
+            type: 'snippet',
+            immediately: true
+          });
+          return Mercury.trigger('show:staticToolbar', {
+            type: 'snippet',
+            snippet: _this.snippet
+          });
+        }
+      });
+      this.element.on('mouseout', function() {
+        if (_this.previewing) {
+          return;
+        }
+        Mercury.trigger('hide:toolbar', {
+          type: 'snippet',
+          immediately: true
+        });
+        return Mercury.trigger('hide:staticToolbar', {
+          type: 'snippet',
+          immediately: false
+        });
+      });
+      Mercury.on('unfocus:regions', function(event) {
+        if (_this.previewing) {
+          return;
+        }
+        if (Mercury.region === _this) {
+          _this.element.removeClass('focus');
+          _this.element.sortable('destroy');
+          return Mercury.trigger('region:blurred', {
+            region: _this
+          });
+        }
+      });
+      Mercury.on('focus:window', function(event) {
+        if (_this.previewing) {
+          return;
+        }
+        if (Mercury.region === _this) {
+          _this.element.removeClass('focus');
+          _this.element.sortable('destroy');
+          return Mercury.trigger('region:blurred', {
+            region: _this
+          });
+        }
+      });
+      this.element.on('mouseup', function() {
+        if (_this.previewing) {
+          return;
+        }
+        _this.focus();
+        return Mercury.trigger('region:focused', {
+          region: _this
+        });
+      });
+      this.element.on('dragover', function(event) {
+        if (_this.previewing) {
+          return;
+        }
+        return event.preventDefault();
+      });
+      this.element.on('drop', function(event) {
+        if (_this.previewing || !Mercury.snippet) {
+          return;
+        }
+        _this.focus();
+        return event.preventDefault();
+      });
+      jQuery(this.document).on('keydown', function(event) {
+        if (_this.previewing || Mercury.region !== _this) {
+          return;
+        }
+        switch (event.keyCode) {
+          case 90:
+            if (!event.metaKey) {
+              return;
+            }
+            event.preventDefault();
+            if (event.shiftKey) {
+              return _this.execCommand('redo');
+            } else {
+              return _this.execCommand('undo');
+            }
+        }
+      });
+      return jQuery(this.document).on('keyup', function() {
+        if (_this.previewing || Mercury.region !== _this) {
+          return;
+        }
+        return Mercury.changes = true;
+      });
+    };
+
+    Static.prototype.focus = function() {
+      Mercury.region = this;
+      return this.element.addClass('focus');
+    };
+
+    Static.prototype.togglePreview = function() {
+      if (!this.previewing) {
+        this.element.sortable('destroy');
+        this.element.removeClass('focus');
+      }
+      return Static.__super__.togglePreview.apply(this, arguments);
+    };
+
+    Static.prototype.execCommand = function(action, options) {
+      var handler;
+      if (options == null) {
+        options = {};
+      }
+      Static.__super__.execCommand.apply(this, arguments);
+      if (handler = Mercury.Regions.Static.actions[action]) {
+        return handler.call(this, options);
+      }
+    };
+
+    Static.actions = {
+      undo: function() {
+        return this.content(this.history.undo());
+      },
+      redo: function() {
+        return this.content(this.history.redo());
+      },
+      insertSnippet: function(options) {
+        var existing, snippet,
+          _this = this;
+        snippet = options.value;
+        if ((existing = this.element.find("[data-snippet=" + snippet.identity + "]")).length) {
+          return existing.replaceWith(snippet.getHTML(this.document, function() {
+            return _this.pushHistory();
+          }));
+        } else {
+          return this.element.append(snippet.getHTML(this.document, function() {
+            return _this.pushHistory();
+          }));
+        }
+      },
+      editSnippet: function() {
+        var snippet;
+        if (!this.snippet) {
+          return;
+        }
+        snippet = Mercury.Snippet.find(this.snippet.data('snippet'));
+        return snippet.displayOptions();
+      },
+      removeSnippet: function() {}
+    };
+
+    return Static;
 
   })(Mercury.Region);
 

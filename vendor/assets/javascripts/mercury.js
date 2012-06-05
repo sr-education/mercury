@@ -212,6 +212,13 @@ window.Mercury = {
           sep1:                ' ',
           removeSnippet:       ['Remove Snippet']
           }
+        },
+
+      staticSnippetable: {
+        _custom:               true,
+        actions:               {
+          editSnippet:         ['Edit Snippet Settings']
+          }
         }
       },
 
