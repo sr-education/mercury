@@ -248,6 +248,7 @@ class @Mercury.Regions.Editable extends Mercury.Region
       if filterSnippets then for element, index in container.find('[data-snippet]')
         element = jQuery(element)
         if snippet = Mercury.Snippet.find(element.data("snippet"))
+          Mercury.log("adding data to snippet #{snippet.identity}: #{element.html()}")
           snippet.data = element.html()
         element.html("[#{element.data("snippet")}/#{element.data("version")}]")
         element.attr({contenteditable: null, 'data-version': null})

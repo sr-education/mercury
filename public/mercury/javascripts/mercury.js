@@ -17451,6 +17451,7 @@ Showdown.converter = function() {
             element = _ref1[index];
             element = jQuery(element);
             if (snippet = Mercury.Snippet.find(element.data("snippet"))) {
+              Mercury.log("adding data to snippet " + snippet.identity + ": " + (element.html()));
               snippet.data = element.html();
             }
             element.html("[" + (element.data("snippet")) + "/" + (element.data("version")) + "]");
