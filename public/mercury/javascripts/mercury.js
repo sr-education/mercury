@@ -271,7 +271,7 @@ window.Mercury = {
     snippets: {
       method: 'POST',
       optionsUrl: '/mercury/snippets/:name/options.html',
-      previewUrl: '/mercury/snippets/:name/preview.html'
+      previewUrl: '/mercury/snippets/:name/preview.json'
       },
 
 
@@ -16265,15 +16265,19 @@ Showdown.converter = function() {
         success: function(data) {
           var attrs, new_elem;
           if (data.element) {
-            new_elem = jQuery(data.element);
-            attrs = {};
-            jQuery.each(element[0].attributes, function(index, attr) {
-              return attrs[attr.name] = attr.value;
-            });
-            element.replaceWith(new_elem.attr(attrs));
+            if (!layoutSnippet) {
+              new_elem = jQuery(data.element);
+              attrs = {};
+              jQuery.each(element[0].attributes, function(index, attr) {
+                return attrs[attr.name] = attr.value;
+              });
+              element.replaceWith(new_elem.attr(attrs));
+              new_elem.html(data.elementHtml);
+              element = new_elem;
+            } else {
+              element.html(data.elementHtml);
+            }
             _this.data = data.elementHtml;
-            new_elem.html(data.elementHtml);
-            element = new_elem;
           } else {
             _this.data = data;
             element.html(data);

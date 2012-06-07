@@ -270,7 +270,7 @@ window.Mercury = {
     snippets: {
       method: 'POST',
       optionsUrl: '/mercury/snippets/:name/options.html',
-      previewUrl: '/mercury/snippets/:name/preview.html'
+      previewUrl: '/mercury/snippets/:name/preview.json'
       },
 
 

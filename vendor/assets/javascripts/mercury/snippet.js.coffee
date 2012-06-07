@@ -79,9 +79,11 @@ class @Mercury.Snippet
             jQuery.each( element[0].attributes, (index,attr) ->
               attrs[attr.name]=attr.value )
             element.replaceWith(new_elem.attr(attrs))
+            new_elem.html(data.elementHtml)
+            element = new_elem
+          else
+            element.html(data.elementHtml)
           @data = data.elementHtml
-          new_elem.html(data.elementHtml)
-          element = new_elem
         else
           @data = data
           element.html(data)
