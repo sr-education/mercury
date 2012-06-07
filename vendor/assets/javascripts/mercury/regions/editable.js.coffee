@@ -206,7 +206,7 @@ class @Mercury.Regions.Editable extends Mercury.Region
     Mercury.trigger('region:update', {region: @})
 
 
-  content: (value = null, filterSnippets = true, includeMarker = false) ->
+  content: (value = null, filterSnippets = true, saving = false, includeMarker = false) ->
     if value != null
       # sanitize the html before we insert it
       container = jQuery('<div>').appendTo(@document.createDocumentFragment())
@@ -251,7 +251,7 @@ class @Mercury.Regions.Editable extends Mercury.Region
           snippet.data = element.html()
         element.html("[#{element.data("snippet")}/#{element.data("version")}]")
         element.attr({contenteditable: null, 'data-version': null})
-        if Mercury.config.serverParser.radius
+        if saving && Mercury.config.serverParser.radius
           element.attr({'class': null, 'data-snippet': null})
 
       # get the html before removing the markers
@@ -307,13 +307,13 @@ class @Mercury.Regions.Editable extends Mercury.Region
 
     # if the key code was return, delete, or backspace store now -- unless it was the same as last time
     if knownKeyCode >= 0 && knownKeyCode != @lastKnownKeyCode # || !keyCode
-      @history.push(@content(null, false, true))
+      @history.push(@content(null, false, false, true))
     else if keyCode
       # set a timeout for pushing to the history
-      @historyTimeout = setTimeout(waitTime * 1000, => @history.push(@content(null, false, true)))
+      @historyTimeout = setTimeout(waitTime * 1000, => @history.push(@content(null, false, false, true)))
     else
       # push to the history immediately
-      @history.push(@content(null, false, true))
+      @history.push(@content(null, false, false, true))
 
     @lastKnownKeyCode = knownKeyCode
 

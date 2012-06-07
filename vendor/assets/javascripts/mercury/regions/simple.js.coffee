@@ -169,7 +169,7 @@ class @Mercury.Regions.Simple extends Mercury.Region
     @element.focus()
 
 
-  content: (value = null, filterSnippets = true) ->
+  content: (value = null, filterSnippets = true, saving = false) ->
     if value != null
       if jQuery.type(value) == 'string'
         @element.val(value)

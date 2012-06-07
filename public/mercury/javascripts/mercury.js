@@ -16772,7 +16772,7 @@ Showdown.converter = function() {
       return {
         type: this.type,
         data: this.dataAttributes(),
-        value: this.content(null, true),
+        value: this.content(null, true, true),
         snippets: this.snippets()
       };
     };
@@ -17396,13 +17396,16 @@ Showdown.converter = function() {
       });
     };
 
-    Editable.prototype.content = function(value, filterSnippets, includeMarker) {
+    Editable.prototype.content = function(value, filterSnippets, saving, includeMarker) {
       var container, content, element, index, selection, snippet, version, _i, _j, _len, _len1, _ref, _ref1;
       if (value == null) {
         value = null;
       }
       if (filterSnippets == null) {
         filterSnippets = true;
+      }
+      if (saving == null) {
+        saving = false;
       }
       if (includeMarker == null) {
         includeMarker = false;
@@ -17455,7 +17458,7 @@ Showdown.converter = function() {
               contenteditable: null,
               'data-version': null
             });
-            if (Mercury.config.serverParser.radius) {
+            if (saving && Mercury.config.serverParser.radius) {
               element.attr({
                 'class': null,
                 'data-snippet': null
@@ -17529,13 +17532,13 @@ Showdown.converter = function() {
       }
       clearTimeout(this.historyTimeout);
       if (knownKeyCode >= 0 && knownKeyCode !== this.lastKnownKeyCode) {
-        this.history.push(this.content(null, false, true));
+        this.history.push(this.content(null, false, false, true));
       } else if (keyCode) {
         this.historyTimeout = setTimeout(waitTime * 1000, function() {
-          return _this.history.push(_this.content(null, false, true));
+          return _this.history.push(_this.content(null, false, false, true));
         });
       } else {
-        this.history.push(this.content(null, false, true));
+        this.history.push(this.content(null, false, false, true));
       }
       return this.lastKnownKeyCode = knownKeyCode;
     };
@@ -18302,12 +18305,15 @@ Showdown.converter = function() {
       return this.element.focus();
     };
 
-    Markupable.prototype.content = function(value, filterSnippets) {
+    Markupable.prototype.content = function(value, filterSnippets, saving) {
       if (value == null) {
         value = null;
       }
       if (filterSnippets == null) {
         filterSnippets = true;
+      }
+      if (saving == null) {
+        saving = false;
       }
       if (value !== null) {
         if (jQuery.type(value) === 'string') {
@@ -18894,12 +18900,15 @@ Showdown.converter = function() {
       return this.element.focus();
     };
 
-    Simple.prototype.content = function(value, filterSnippets) {
+    Simple.prototype.content = function(value, filterSnippets, saving) {
       if (value == null) {
         value = null;
       }
       if (filterSnippets == null) {
         filterSnippets = true;
+      }
+      if (saving == null) {
+        saving = false;
       }
       if (value !== null) {
         if (jQuery.type(value) === 'string') {
@@ -19601,7 +19610,7 @@ Showdown.converter = function() {
   this.Mercury.modalHandlers.htmlEditor = function() {
     var content,
       _this = this;
-    content = Mercury.region.content(null, true, false);
+    content = Mercury.region.content(null, true, false, false);
     this.element.find('textarea').val(content);
     return this.element.find('form').on('submit', function(event) {
       var value;
