@@ -251,6 +251,8 @@ class @Mercury.Regions.Editable extends Mercury.Region
           snippet.data = element.html()
         element.html("[#{element.data("snippet")}/#{element.data("version")}]")
         element.attr({contenteditable: null, 'data-version': null})
+        if Mercury.config.serverParser.radius
+          element.attr({'class': null, 'data-snippet': null})
 
       # get the html before removing the markers
       content = container.html()

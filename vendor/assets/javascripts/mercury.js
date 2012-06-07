@@ -463,7 +463,17 @@ window.Mercury = {
       '.{{regionClass}}:after { content: "."; display: block; visibility: hidden; clear: both; height: 0; overflow: hidden; }' +
       '.{{regionClass}} table, .{{regionClass}} td, .{{regionClass}} th { border: 1px dotted red; min-width: 6px; }' +
       '.mercury-textarea { border: 0; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; resize: none; }' +
-      '.mercury-textarea:focus { outline: none; }'
+      '.mercury-textarea:focus { outline: none; }',
+
+
+    // ## Server Parser
+    //
+    //  If you are using radius as a tag parser then data attributes need to be cleaned out of and raduis tag you save
+    //  TODO: change the snippet generation from the weird replace I added and have the tag be built properly initially
+    serverParser: {
+      radius: false,
+      radiusPrefix: "r"
+    }
   },
 
   // ## Silent Mode
