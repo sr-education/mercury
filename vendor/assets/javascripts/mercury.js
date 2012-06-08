@@ -473,7 +473,14 @@ window.Mercury = {
     serverParser: {
       radius: false,
       radiusPrefix: "r"
-    }
+    },
+
+    // ## Image Paths
+    //
+    // Removing hardcoded image paths from the code
+    imagePaths: {
+      imageNotFound: '/assets/mercury/missing-image.png'
+    } 
   },
 
   // ## Silent Mode

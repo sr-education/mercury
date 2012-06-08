@@ -293,7 +293,7 @@ class @Mercury.Regions.Editable extends Mercury.Region
         @element.prev().remove() if action == 'indent' && @element.prev() != sibling
 
     # handle any broken images by replacing the source with an alert image
-    @element.find('img').one 'error', -> jQuery(@).attr({src: '/assets/mercury/missing-image.png', title: 'Image not found'})
+    @element.find('img').one 'error', -> jQuery(@).attr({src: Mercury.config.imagePaths.imageNotFound, title: 'Image not found'})
 
 
   pushHistory: (keyCode) ->
