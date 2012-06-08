@@ -474,7 +474,14 @@ window.Mercury = {
     serverParser: {
       radius: false,
       radiusPrefix: "r"
-    }
+    },
+
+    // ## Image Paths
+    //
+    // Removing hardcoded image paths from the code
+    imagePaths: {
+      imageNotFound: '/assets/mercury/missing-image.png'
+    } 
   },
 
   // ## Silent Mode
@@ -17517,7 +17524,7 @@ Showdown.converter = function() {
       }
       return this.element.find('img').one('error', function() {
         return jQuery(this).attr({
-          src: '/assets/mercury/missing-image.png',
+          src: Mercury.config.imagePaths.imageNotFound,
           title: 'Image not found'
         });
       });
