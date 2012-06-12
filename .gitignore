@@ -31,3 +31,5 @@ capybara*
 .sass-cache
 public/system
 public/assets
+
+.DS_Store
