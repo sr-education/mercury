@@ -82,6 +82,19 @@ describe "Mercury.SnippetToolbar", ->
         jasmine.simulate.mouseout($('#test .mercury-snippet-toolbar').get(0))
         expect(spy.callCount).toEqual(1)
 
+    describe "releasing events", ->
+
+      it 'makes the following events releasable', ->
+        events = (eventName for [target, eventName, handler] in @snippetToolbar._boundEvents)
+        expect(events).toEqual(['show:toolbar', 'hide:toolbar', 'scroll'])
+
+      it 'calls off to unbind the events on release', ->
+        targets = (target for [target, eventName, handler] in @snippetToolbar._boundEvents)
+        # we bind to Mercury twice so pop the first one off for spying
+        targets.shift()
+        spys = (spyOn(target, 'off') for target in targets)
+        @snippetToolbar.release()
+        expect(spy).toHaveBeenCalled() for spy in spys
 
   describe "#show", ->
 
@@ -113,10 +126,10 @@ describe "Mercury.SnippetToolbar", ->
     it "positions itself based on the snippet", ->
       @snippetToolbar.element.show()
       @snippetToolbar.position()
-      if $.browser.webkit
-        expect(@snippetToolbar.element.offset()).toEqual({top: 18, left : 200})
-      else
-        expect(@snippetToolbar.element.offset()).toEqual({top: 14, left : 200})
+      # use a tolerance since there are measurement differences between browsers we want it between 14-18
+      expect(@snippetToolbar.element.offset().top).toBeLessThan(19)
+      expect(@snippetToolbar.element.offset().top).toBeGreaterThan(13)
+      expect(@snippetToolbar.element.offset().left).toEqual(200)
 
 
   describe "#appear", ->
@@ -142,6 +155,8 @@ describe "Mercury.SnippetToolbar", ->
 
     beforeEach ->
       @snippetToolbar = new Mercury.SnippetToolbar($('document'), {appendTo: '#test'})
+
+    afterEach -> @snippetToolbar.release()
 
     it "it clears the hide timeout", ->
       spy = spyOn(window, 'clearTimeout').andCallFake(=>)
@@ -174,11 +189,12 @@ describe "Mercury.SnippetToolbar", ->
         expect(@setTimeoutSpy.callCount).toEqual(1)
 
       it "hides the element", ->
-        @setTimeoutSpy.andCallFake((timeout, callback) => callback())
+        @setTimeoutSpy.andCallFake((callback, timeout) => callback())
         @snippetToolbar.hide()
         expect(@snippetToolbar.element.css('display')).toEqual('none')
 
       it "sets visible", ->
-        @setTimeoutSpy.andCallFake((timeout, callback) => callback())
+        @setTimeoutSpy.andCallFake((callback, timeout) => callback())
         @snippetToolbar.hide()
         expect(@snippetToolbar.visible).toEqual(false)
+

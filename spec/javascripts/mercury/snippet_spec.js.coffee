@@ -35,7 +35,7 @@ describe "Mercury.Snippet", ->
     it "builds an element (in whatever context is provided", ->
       ret = @snippet.getHTML($(document))
       html = $('<div>').html(ret).html()
-      expect(html).toContain('class="mercury-snippet foo-snippet"')
+      expect(html).toContain('class="foo-snippet"')
       expect(html).toContain('contenteditable="false"')
       expect(html).toContain('data-snippet="identity"')
       expect(html).toContain('data-version="1"')
@@ -52,6 +52,13 @@ describe "Mercury.Snippet", ->
       callback = =>
       @snippet.getHTML($(document), callback)
       expect(@loadPreviewSpy.argsForCall[0][1]).toEqual(callback)
+
+    it "wraps the snippet in the specified wrapperTag", ->
+      @snippet.wrapperTag = 'li'
+      ret = @snippet.getHTML($(document))
+      container = $('<div>')
+      container.html(ret)
+      expect($(container.children()[0]).is('li')).toEqual(true)
 
 
   describe "#getText", ->
@@ -142,6 +149,11 @@ describe "Mercury.Snippet", ->
       @snippet.setOptions({foo: 'baz'})
       expect(@snippet.history.stack.length).toEqual(2)
 
+    it "can set the wrapperTag attribute from options", ->
+      expect(@snippet.wrapperTag).toEqual('div')
+      @snippet.setOptions({wrapperTag: 'li'})
+      expect(@snippet.wrapperTag).toEqual('li')
+
 
   describe "#setVersion", ->
 
@@ -200,6 +212,11 @@ describe "Mercury.Snippet class methods", ->
       Mercury.snippet = 'foo'
       Mercury.Snippet.displayOptionsFor('foo')
       expect(Mercury.snippet).toEqual(null)
+
+    it "can pass options to the modal", ->
+      Mercury.Snippet.displayOptionsFor('foo', {option1: 'option1'})
+      expect(@modalSpy.callCount).toEqual(1)
+      expect(@modalSpy.argsForCall[0]).toEqual(["/mercury/snippets/foo/options.html", {title: 'Snippet Options', handler: 'insertSnippet', snippetName: 'foo', option1: 'option1'}])
 
 
   describe ".create", ->

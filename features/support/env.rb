@@ -4,14 +4,16 @@
 # instead of editing this one. Cucumber will automatically load all features/**/*.rb
 # files.
 
+ENV["RAILS_ROOT"] = File.expand_path('../../../spec/dummy', __FILE__)
 require 'cucumber/rails'
 require 'capybara/firebug'
+require 'aruba/cucumber'
 
 # You can enable firebug in your tests by tagging them @firebug.
 # To change the version of firebug use the FIREBUG_VERSION environment variable.
 # For firefox 4+ use 1.7.0
 # For firefox 3 use 1.6.2
-Selenium::WebDriver::Firefox::Profile.firebug_version = ENV['FIREBUG_VERSION'] || '1.8.3'
+# Selenium::WebDriver::Firefox::Profile.firebug_version = ENV['FIREBUG_VERSION'] || '1.8.3'
 
 # Capybara defaults to XPath selectors rather than Webrat's default of CSS3. In
 # order to ease the transition to Capybara we set the default here. If you'd
@@ -43,4 +45,12 @@ begin
   DatabaseCleaner.strategy = :transaction
 rescue NameError
   raise "You need to add database_cleaner to your Gemfile (in the :test group) if you wish to use it."
+end
+
+Before('@use_hidden_elements') do
+  Capybara.ignore_hidden_elements = false
+end
+
+After('@use_hidden_elements') do
+  Capybara.ignore_hidden_elements = true
 end

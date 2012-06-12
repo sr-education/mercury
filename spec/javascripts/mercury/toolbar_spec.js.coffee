@@ -48,7 +48,7 @@ describe "Mercury.Toolbar", ->
       it "builds out toolbar elements from the configuration", ->
         expect($('.mercury-primary-toolbar').length).toEqual(1)
         expect($('.mercury-editable-toolbar').length).toEqual(1)
-        expect($('.mercury-editable-toolbar').data('regions')).toEqual('editable,markupable')
+        expect($('.mercury-editable-toolbar').data('regions')).toEqual('full,markdown')
 
       it "builds buttons etc.", ->
         expect(@buildButtonSpy.callCount).toBeGreaterThan(10)
@@ -133,18 +133,18 @@ describe "Mercury.Toolbar", ->
 
       it "enables toolbars based on the region type", ->
         $('.mercury-editable-toolbar').addClass('disabled')
-        Mercury.trigger('region:focused', {region: {type: 'editable'}})
+        Mercury.trigger('region:focused', {region: {type: -> 'full'}})
         expect($('.mercury.editable-toolbar').hasClass('disabled')).toEqual(false)
 
         $('.mercury-editable-toolbar').addClass('disabled')
-        Mercury.trigger('region:focused', {region: {type: 'markupable'}})
+        Mercury.trigger('region:focused', {region: {type: -> 'markdown'}})
         expect($('.mercury.editable-toolbar').hasClass('disabled')).toEqual(false)
 
     describe "custom event: region:blurred", ->
 
       it "disables toolbars for the region type", ->
         $('.mercury-editable-toolbar').removeClass('disabled')
-        Mercury.trigger('region:blurred', {region: {type: 'editable'}})
+        Mercury.trigger('region:blurred', {region: {type: -> 'full'}})
         expect($('.mercury-editable-toolbar').hasClass('disabled')).toEqual(true)
 
     describe "click", ->
@@ -179,6 +179,14 @@ describe "Mercury.Toolbar", ->
 
       it "returns 0", ->
         expect(@toolbar.height()).toEqual(0)
+
+    describe "when forced", ->
+
+      beforeEach ->
+        @toolbar = new Mercury.Toolbar({appendTo: '#test', visible: false})
+
+      it "returns the element outerheight", ->
+        expect(@toolbar.height(true)).toEqual($('.mercury-toolbar-container').outerHeight())
 
 
   describe "#show", ->

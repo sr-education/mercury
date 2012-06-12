@@ -1,36 +1,29 @@
 #!/usr/bin/env rake
-# Add your own tasks in files placed in lib/tasks ending in .rake,
-# for example lib/tasks/capistrano.rake, and they will automatically be available to Rake.
-
 begin
-  require 'bundler/gem_tasks'
+  require 'bundler/setup'
 rescue LoadError
   puts 'You must `gem install bundler` and `bundle install` to run rake tasks'
 end
 
-require File.expand_path('../config/application', __FILE__)
+APP_RAKEFILE = File.expand_path("../spec/dummy/Rakefile", __FILE__)
+load 'rails/tasks/engine.rake'
+Bundler::GemHelper.install_tasks
 
-Mercury::Application.load_tasks
+require 'cucumber/rake/task'
+require 'evergreen/tasks'
+
+Cucumber::Rake::Task.new(:cucumber) do |t|
+  # t.cucumber_opts = "features --format pretty"
+end
+
+task :default => ['spec:javascripts', :cucumber]
 
 #
 # Mercury build tasks
 #
 namespace :mercury do
-
-  desc "Builds the documentation using docco"
-  task :document do
-    require 'rocco'
-    output_dir = Rails.root.join('annotated_source').to_s
-    sources = Dir[Rails.root.join('vendor/assets/javascripts/*.js').to_s]
-    sources += Dir[Rails.root.join('vendor/assets/javascripts/**/*.coffee').to_s]
-    sources.each do |filename|
-      rocco = Rocco.new(filename, sources, {:template_file => Rails.root.join('annotated_source.template'), :docblocks => true})
-      dest = File.join(output_dir, filename.sub(Regexp.new("^#{Rails.root.join('vendor/assets/javascripts')}"), '').sub(Regexp.new("#{File.extname(filename)}$"),".html"))
-      puts "rocco: #{filename} -> #{dest}"
-      FileUtils.mkdir_p File.dirname(dest)
-      File.open(dest, 'wb') { |fd| fd.write(rocco.to_html) }
-    end
-  end
+  require 'uglifier'
+  require 'sprockets-rails'
 
   desc "Builds Mercury into the distribution ready package"
   task :build => ['build:dialogs', 'build:javascripts', 'build:stylesheets']
@@ -39,8 +32,8 @@ namespace :mercury do
 
     desc "Combines all dialog and model views into a js file"
     task :dialogs => :environment do
-      input = Rails.root.join('app/views')
-      File.open(Rails.root.join('public/mercury/javascripts/mercury_dialogs.js'), 'w') do |file|
+      input = Mercury::Engine.root.join('app/views')
+      File.open(Mercury::Engine.root.join('distro/javascripts/mercury_dialogs.js'), 'w') do |file|
         file.write "if (!window.Mercury) window.Mercury = {preloadedViews: {}};\n"
         %w[lightviews modals palettes panels selects].each do |path|
           file.write "// -- #{path.upcase} --\n"
@@ -57,7 +50,7 @@ namespace :mercury do
     task :javascripts => :environment do
       config = Rails.application.config
       env    = Rails.application.assets
-      target = Pathname.new(File.join(Rails.public_path, config.assets.prefix))
+      target = Pathname.new(File.join(Mercury::Engine.root.join('distro'), 'build'))
       manifest = {}
 
       ['mercury.js', 'mercury/mercury.js'].each do |path|
@@ -77,30 +70,30 @@ namespace :mercury do
         end
       end
 
-      Dir[Rails.root.join('public/assets/mercury-*.js')].each do |filename|
-        copy_file(filename, Rails.root.join('public/mercury/javascripts/mercury.js'))
+      Dir[Mercury::Engine.root.join('distro/build/mercury-*.js')].each do |filename|
+        copy_file(filename, Mercury::Engine.root.join('distro/javascripts/mercury.js'))
         remove(filename)
       end
 
-      Dir[Rails.root.join('public/assets/mercury/mercury-*.js')].each do |filename|
-        copy_file(filename, Rails.root.join('public/mercury/javascripts/mercury.min.js'))
+      Dir[Mercury::Engine.root.join('distro/build/mercury/mercury-*.js')].each do |filename|
+        copy_file(filename, Mercury::Engine.root.join('distro/javascripts/mercury.min.js'))
         remove(filename)
-        minified = Uglifier.compile(File.read(Rails.root.join('vendor/assets/javascripts/mercury/dependencies/jquery-1.7.js')))
-        minified += Uglifier.compile(File.read(Rails.root.join('public/mercury/javascripts/mercury.min.js')))
-        File.open(Rails.root.join('public/mercury/javascripts/mercury.min.js'), 'w') do |file|
-          file.write(File.read(Rails.root.join('vendor/assets/javascripts/mercury.js')))
+        minified = '' #Uglifier.compile(File.read(Mercury::Engine.root.join('app/assets/javascripts/mercury/dependencies/jquery-1.7.js')))
+        minified += Uglifier.compile(File.read(Mercury::Engine.root.join('distro/javascripts/mercury.min.js')))
+        File.open(Mercury::Engine.root.join('distro/javascripts/mercury.min.js'), 'w') do |file|
+          file.write(File.read(Mercury::Engine.root.join('app/assets/javascripts/mercury.js')))
           file.write(minified)
         end
       end
 
-      copy_file(Rails.root.join('vendor/assets/javascripts/mercury_loader.js'), Rails.root.join('public/mercury/javascripts/mercury_loader.js'))
+      #copy_file(Mercury::Engine.root.join('app/assets/javascripts/mercury_loader.js'), Mercury::Engine.root.join('distro/javascripts/mercury_loader.js'))
     end
 
     desc "Combine stylesheets into mercury.css and mercury.bundle.css (bundling images where possible)"
     task :stylesheets => :environment do
       config = Rails.application.config
       env    = Rails.application.assets
-      target = Pathname.new(File.join(Rails.public_path, config.assets.prefix))
+      target = Pathname.new(File.join(Mercury::Engine.root.join('distro'), 'build'))
       manifest = {}
 
       ['mercury.css'].each do |path|
@@ -120,16 +113,16 @@ namespace :mercury do
         end
       end
 
-      Dir[Rails.root.join('public/assets/mercury-*.css')].each do |filename|
-        copy_file(filename, Rails.root.join('public/mercury/stylesheets/mercury.css'))
+      Dir[Mercury::Engine.root.join('distro/build/mercury-*.css')].each do |filename|
+        copy_file(filename, Mercury::Engine.root.join('distro/stylesheets/mercury.css'))
         remove(filename)
       end
 
-      bundled = File.read(Rails.root.join('public/mercury/stylesheets/mercury.css'))
+      bundled = File.read(Mercury::Engine.root.join('distro/stylesheets/mercury.css'))
 
       # import image files using: url(data:image/gif;base64,XEQA7)
       bundled.gsub!(/url\(\/assets\/(.*?)\)/ix) do |m|
-        encoded = Base64.encode64(File.read(Rails.root.join('vendor/assets/images', $1))).gsub("\n", '')
+        encoded = Base64.encode64(File.read(Mercury::Engine.root.join('app/assets/images', $1))).gsub("\n", '')
         "url(data:image/png;base64,#{encoded})"
       end
 
@@ -144,7 +137,7 @@ namespace :mercury do
       bundled.gsub!(/ \*/, "\n *")
       bundled.gsub!(/ \*\//, " */\n")
 
-      File.open(Rails.root.join('public/mercury/stylesheets/mercury.bundle.css'), 'wb') do |file|
+      File.open(Mercury::Engine.root.join('distro/stylesheets/mercury.bundle.css'), 'wb') do |file|
         file.write(bundled)
       end
     end
@@ -152,113 +145,4 @@ namespace :mercury do
   end
 end
 
-#
-# Cucumber tasks
-#
-unless ARGV.any? {|a| a =~ /^gems/} # Don't load anything when running the gems:* tasks
-  vendored_cucumber_bin = Dir["#{Rails.root}/vendor/{gems,plugins}/cucumber*/bin/cucumber"].first
-  $LOAD_PATH.unshift(File.dirname(vendored_cucumber_bin) + '/../lib') unless vendored_cucumber_bin.nil?
 
-  begin
-    require 'cucumber/rake/task'
-
-    namespace :cucumber do
-      Cucumber::Rake::Task.new({:ok => 'db:test:prepare'}, 'Run features that should pass') do |t|
-        t.binary = vendored_cucumber_bin # If nil, the gem's binary is used.
-        t.fork = true # You may get faster startup if you set this to false
-        t.profile = 'default'
-      end
-
-      Cucumber::Rake::Task.new({:wip => 'db:test:prepare'}, 'Run features that are being worked on') do |t|
-        t.binary = vendored_cucumber_bin
-        t.fork = true # You may get faster startup if you set this to false
-        t.profile = 'wip'
-      end
-
-      Cucumber::Rake::Task.new({:rerun => 'db:test:prepare'}, 'Record failing features and run only them if any exist') do |t|
-        t.binary = vendored_cucumber_bin
-        t.fork = true # You may get faster startup if you set this to false
-        t.profile = 'rerun'
-      end
-
-      desc 'Run all features'
-      task :all => [:ok, :wip]
-    end
-    desc 'Alias for cucumber:ok'
-    task :cucumber => 'cucumber:ok'
-
-    task :default => :cucumber
-
-    task :features => :cucumber do
-      STDERR.puts "*** The 'features' task is deprecated. See rake -T cucumber ***"
-    end
-
-    # In case we don't have ActiveRecord, append a no-op task that we can depend upon.
-    task 'db:test:prepare' do
-    end
-  rescue LoadError
-    desc 'cucumber rake task not available (cucumber not installed)'
-    task :cucumber do
-      abort 'Cucumber rake task is not available. Be sure to install cucumber as a gem or plugin'
-    end
-  end
-end
-
-# Always build the gemspec before build
-task :release => :gemspec
-task :build => :gemspec
-
-desc "Generate the .gemspec manifest"
-task :gemspec do
-  # read spec file and split out manifest section
-  #
-  spec = File.read(File.join(File.dirname(__FILE__), 'mercury-rails.gemspec'))
-  head, manifest, tail = spec.split("  # = MANIFEST =\n")
-
-  replace_header(head, :date)
-
-  # determine file list from git ls-files
-  files = `git ls-files`.
-    split("\n").
-    sort.
-    reject { |file| file =~ /^\./ }.
-    reject { |file| file =~ %r{^(annotated_source|config\.ru|log/|pkg/|public/|script/|tmp/|features/|spec/|config/(?!engine\.rb))} }.
-    map { |file| "    #{file}" }.
-    join("\n")
-  
-  test_files = `git ls-files -- {test,spec,features}/*`.
-    split("\n").
-    sort.
-    map { |file| "    #{file}" }.
-    join("\n")
-  
-  executables = `git ls-files -- bin/*`.
-    split("\n").
-    sort.
-    map{ |f| "    #{File.basename(f)}" }.
-    join("\n")
-
-  # piece file back together and write
-  manifest = <<MANIFEST
-  s.files = %w[
-#{files}
-  ]
-  s.test_files = %w[
-#{test_files}
-  ]
-  s.executables = %w[
-#{executables}
-  ]
-MANIFEST
-  spec = [head, manifest, tail].join("  # = MANIFEST =\n")
-  File.open(File.join(File.dirname(__FILE__), 'mercury-rails.gemspec'), 'w') { |io| io.write(spec) }
-  puts "Updated mercury-rails.gemspec"
-end
-
-def replace_header(head, header_name)
-  head.sub!(/(\.#{header_name}\s*= ').*'/) { "#{$1}#{send(header_name)}'"}
-end
-
-def date
-  Date.today.to_s
-end

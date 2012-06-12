@@ -1,3 +1,2 @@
-require 'paperclip'
+require 'mercury/rails'
 
-require File.expand_path('../config/engine', File.dirname(__FILE__))

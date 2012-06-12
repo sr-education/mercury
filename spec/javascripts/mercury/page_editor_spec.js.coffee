@@ -3,7 +3,8 @@ describe "Mercury.PageEditor", ->
   template 'mercury/page_editor.html'
 
   beforeEach ->
-    Mercury.config.regions.className = 'custom-region-class'
+    Mercury.config.regions.attribute = 'custom-region-attribute'
+    Date.prototype.getTime = -> 1234
 
   afterEach ->
     @pageEditor = null
@@ -96,6 +97,16 @@ describe "Mercury.PageEditor", ->
       @pageEditor = new Mercury.PageEditor('', {appendTo: $('#test')})
       expect(@resizeSpy.callCount).toEqual(1)
 
+    it "binds to iframe load event", ->
+      initializeFrameSpy = spyOn(Mercury.PageEditor.prototype, 'initializeFrame')
+      bindEventsSpy = spyOn(Mercury.PageEditor.prototype, 'bindEvents')
+
+      @pageEditor = new Mercury.PageEditor('', {appendTo: $('#test')})
+      @pageEditor.iframe.trigger('load')
+
+      expect(initializeFrameSpy.callCount).toEqual(1)
+      expect(bindEventsSpy.callCount).toEqual(1)
+
 
   describe "#initializeFrame", ->
 
@@ -139,11 +150,6 @@ describe "Mercury.PageEditor", ->
       @pageEditor.initializeFrame()
       expect(@pageEditor.iframe.get(0).contentWindow.History).toEqual(window.History)
 
-    it "calls bindEvents", ->
-      @finalizeInterfaceSpy.andCallFake(=>)
-      @pageEditor.initializeFrame()
-      expect(@bindEventsSpy.callCount).toEqual(1)
-
     it "calls resize", ->
       @finalizeInterfaceSpy.andCallFake(=>)
       @pageEditor.initializeFrame()
@@ -167,11 +173,13 @@ describe "Mercury.PageEditor", ->
       expect(spy.argsForCall[0]).toEqual(['ready'])
 
     it "fires the ready event (jQuery.trigger)", ->
-      spy = spyOn(jQuery.fn, 'trigger').andCallFake(=>)
+      mock = {trigger: ->}
+      @pageEditor.iframe.get(0).contentWindow.jQuery = -> mock
+      spy = spyOn(mock, 'trigger').andCallFake(=>)
       @finalizeInterfaceSpy.andCallFake(=>)
       @pageEditor.initializeFrame()
-      expect(spy.callCount).toEqual(2)
-      expect(spy.argsForCall[0]).toEqual(['mercury:ready', undefined])
+      expect(spy.callCount).toEqual(1)
+      expect(spy.argsForCall[0]).toEqual(['mercury:ready'])
 
     it "fires the ready event (Event.fire)", ->
       @finalizeInterfaceSpy.andCallFake(=>)
@@ -250,8 +258,8 @@ describe "Mercury.PageEditor", ->
     beforeEach ->
       @resizeSpy = spyOn(Mercury.PageEditor.prototype, 'resize').andCallFake(=>)
       Mercury.PageEditor.prototype.initializeFrame = ->
-      Mercury.Regions.Editable = -> {region: true}
-      Mercury.Regions.Editable.supported = true
+      Mercury.Regions.Full = -> {region: true}
+      Mercury.Regions.Full.supported = true
       @pageEditor = new Mercury.PageEditor('', {appendTo: $('#test')})
 
     it "instantiates the region and pushes it into the regions array", ->
@@ -265,7 +273,7 @@ describe "Mercury.PageEditor", ->
 
     it "throws an exception when the data-type isn't known", ->
       expect(=> @pageEditor.buildRegion($('#region4'))).toThrow('Region type is malformed, no data-type provided, or "Unknown" is unknown for the "region4" region.')
-      $('#region4').attr('data-type', 'foo')
+      $('#region4').attr('custom-region-attribute', 'foo')
       expect(=> @pageEditor.buildRegion($('#region4'))).toThrow('Region type is malformed, no data-type provided, or "Foo" is unknown for the "region4" region.')
 
     it "doesn't re-instantiate the region if the element's already initialized", ->
@@ -276,16 +284,16 @@ describe "Mercury.PageEditor", ->
 
     it "calls togglePreview on the region if in preview mode", ->
       callCount = 0
-      Mercury.Regions.Editable = -> {region: true, togglePreview: -> callCount += 1 }
-      Mercury.Regions.Editable.supported = true
+      Mercury.Regions.Full = -> {region: true, togglePreview: -> callCount += 1 }
+      Mercury.Regions.Full.supported = true
       @pageEditor.previewing = true
       @pageEditor.buildRegion($('#region2'))
       expect(callCount).toEqual(1)
 
     it "doesn't call togglePreview if not in preview mode", ->
       callCount = 0
-      Mercury.Regions.Editable = -> {region: true, togglePreview: -> callCount += 1 }
-      Mercury.Regions.Editable.supported = true
+      Mercury.Regions.Full = -> {region: true, togglePreview: -> callCount += 1 }
+      Mercury.Regions.Full.supported = true
       @pageEditor.buildRegion($('#region2'))
       expect(callCount).toEqual(0)
 
@@ -313,7 +321,7 @@ describe "Mercury.PageEditor", ->
 
     it "fires a mode event to put things into preview mode if it's not visible yet", ->
       spy = spyOn(Mercury, 'trigger').andCallFake(=>)
-      @pageEditor.options.visible = false
+      @pageEditor.visible = false
       @pageEditor.finalizeInterface()
       expect(spy.callCount).toEqual(1)
 
@@ -325,12 +333,13 @@ describe "Mercury.PageEditor", ->
       @pageEditor = new Mercury.PageEditor('', {appendTo: $('#test')})
       @pageEditor.document = $(document)
       @pageEditor.bindEvents()
+      @pageEditor.bindDocumentEvents()
 
     describe "custom event: initialize:frame", ->
 
       it "calls initializeFrame", ->
         @initializeFrameSpy = spyOn(Mercury.PageEditor.prototype, 'initializeFrame').andCallFake(=>)
-        @setTimeoutSpy = spyOn(window, 'setTimeout').andCallFake((timeout, callback) -> callback())
+        @setTimeoutSpy = spyOn(window, 'setTimeout').andCallFake((callback, timeout) -> callback())
         Mercury.trigger('initialize:frame')
         expect(@initializeFrameSpy.callCount).toEqual(1)
         expect(@setTimeoutSpy.callCount).toEqual(1)
@@ -348,7 +357,7 @@ describe "Mercury.PageEditor", ->
       it "calls focus on a focusable element", ->
         callCount = 0
         @pageEditor.focusableElement = {focus: -> callCount += 1}
-        @setTimeoutSpy = spyOn(window, 'setTimeout').andCallFake((timeout, callback) -> callback())
+        @setTimeoutSpy = spyOn(window, 'setTimeout').andCallFake((callback, timeout) -> callback())
         Mercury.trigger('focus:window')
         expect(callCount).toEqual(1)
 
@@ -460,13 +469,12 @@ describe "Mercury.PageEditor", ->
       beforeEach ->
         @pageEditor.visible = true
 
-      it "triggers an extra preview mode event if currently previewing", ->
-        @pageEditor.previewing = true
+      it "triggers an preview mode event if not currently previewing", ->
+        @pageEditor.previewing = false
         spy = spyOn(Mercury, 'trigger').andCallFake(=>)
         @pageEditor.toggleInterface()
-        expect(spy.callCount).toEqual(3)
+        expect(spy.callCount).toEqual(2)
         expect(spy.argsForCall[0]).toEqual(['mode', {mode: 'preview'}])
-        expect(spy.argsForCall[1]).toEqual(['mode', {mode: 'preview'}])
 
       it "sets visible to false", ->
         @pageEditor.toggleInterface()
@@ -537,8 +545,33 @@ describe "Mercury.PageEditor", ->
       Mercury.config.editorUrlRegEx = original
 
     it "adds query params", ->
-      expect(@pageEditor.iframeSrc('http://foo.com/editor/path', true)).toEqual('http://foo.com/path?mercury_frame=true')
-      expect(@pageEditor.iframeSrc('http://foo.com/editor/path?something=true', true)).toEqual('http://foo.com/path?something=true&mercury_frame=true')
+      expect(@pageEditor.iframeSrc('http://foo.com/editor/path', true)).toEqual('http://foo.com/path?mercury_frame=true&_=1234')
+      expect(@pageEditor.iframeSrc('http://foo.com/editor/path?something=true', true)).toEqual('http://foo.com/path?something=true&mercury_frame=true&_=1234')
+
+
+  describe "#loadIframeSrc", ->
+
+    beforeEach ->
+      Mercury.PageEditor.prototype.initializeFrame = ->
+      @pageEditor = new Mercury.PageEditor('', {appendTo: $('#test')})
+
+    it 'unbinds events to @document', ->
+      @pageEditor.document = {off: ->}
+      documentSpy = spyOn(@pageEditor.document, 'off')
+      @pageEditor.loadIframeSrc()
+      expect(documentSpy).toHaveBeenCalled()
+
+    it 'resets the iframe loaded data attribute', ->
+      @pageEditor.iframe.data('loaded', true)
+      @pageEditor.loadIframeSrc()
+      expect(@pageEditor.iframe.data('loaded')).toEqual(false)
+
+    it 'sets the iframe source', ->
+      iframe = {contentWindow: {document: {location: {}}}}
+      @pageEditor.iframe = {data: (->), get: -> iframe}
+      @pageEditor.loadIframeSrc('boo')
+      expect(iframe.contentWindow.document.location.href).toEqual('boo?mercury_frame=true&_=1234')
+
 
 
   describe "#hijackLinksAndForms", ->
@@ -716,13 +749,13 @@ describe "Mercury.PageEditor", ->
         it "alerts and triggers save_failed with the url", ->
           alert_spy = spyOn(window, 'alert').andCallFake(=>)
           trigger_spy = spyOn(Mercury, 'trigger').andCallFake(=>)
-          
+
           @pageEditor.saveUrl = '/foo/bar'
           @pageEditor.save()
 
           expect(alert_spy.callCount).toEqual(1)
           expect(alert_spy.argsForCall[0]).toEqual(['Mercury was unable to save to the url: /foo/bar'])
-          
+
           expect(trigger_spy.callCount).toEqual(1)
           expect(trigger_spy.argsForCall[0][0]).toEqual('save_failed')
           expect(trigger_spy.argsForCall[0][1]).toBeDefined()
