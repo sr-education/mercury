@@ -1,6 +1,7 @@
 @Mercury.modalHandlers.htmlEditor = ->
   # fill the text area with the content
   content = Mercury.region.content(null, true, false, false)
+  content = $.htmlClean(content, {format:true})
   @element.find('textarea').val(content)
 
   # replace the contents on form submit
