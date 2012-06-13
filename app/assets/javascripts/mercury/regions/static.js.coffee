@@ -3,11 +3,10 @@
 class @Mercury.Regions.Static extends Mercury.Region
   @supported: document.getElementById
   @supportedText: "IE 7+, Chrome 10+, Firefox 4+, Safari 5+, Opera 8+"
-
   type = 'static'
+  type: -> type
 
   constructor: (@element, @window, @options = {}) ->
-    @type = 'static'
     super
 
 
