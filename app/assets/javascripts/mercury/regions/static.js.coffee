@@ -19,7 +19,6 @@ class @Mercury.Regions.Static extends Mercury.Region
 
     Mercury.on 'focus:frame', =>
       return if @previewing || Mercury.region != @
-      @focus()
 
     Mercury.on 'action', (event, options) =>
       return if @previewing || Mercury.region != @
@@ -39,32 +38,25 @@ class @Mercury.Regions.Static extends Mercury.Region
     Mercury.on 'unfocus:regions', (event) =>
       return if @previewing
       if Mercury.region == @
-        @element.removeClass('focus')
-        @element.sortable('destroy')
         Mercury.trigger('region:blurred', {region: @})
 
     Mercury.on 'focus:window', (event) =>
       return if @previewing
       if Mercury.region == @
-        @element.removeClass('focus')
         @element.sortable('destroy')
         Mercury.trigger('region:blurred', {region: @})
 
     @element.on 'mouseup', =>
       return if @previewing
-      @focus()
       Mercury.trigger('region:focused', {region: @})
 
     @element.on 'dragover', (event) =>
       return if @previewing
       event.preventDefault()
-      #event.originalEvent.dataTransfer.dropEffect = 'copy'
 
     @element.on 'drop', (event) =>
       return if @previewing || ! Mercury.snippet
-      @focus()
       event.preventDefault()
-      #Mercury.Snippet.displayOptionsFor(Mercury.snippet)
 
     jQuery(@document).on 'keydown', (event) =>
       return if @previewing || Mercury.region != @
@@ -77,12 +69,6 @@ class @Mercury.Regions.Static extends Mercury.Region
     jQuery(@document).on 'keyup', =>
       return if @previewing || Mercury.region != @
       Mercury.changes = true
-
-
-  focus: ->
-    Mercury.region = @
-    @element.addClass('focus')
-
 
   togglePreview: ->
     if !@previewing
