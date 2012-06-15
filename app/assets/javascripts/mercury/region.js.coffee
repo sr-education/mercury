@@ -31,14 +31,14 @@ class @Mercury.Region
       return if @previewing || Mercury.region != @
       @execCommand(options.action, options) if options.action
 
-    @element.on 'mouseenter', =>
+    @element.on 'mousemove', (event) =>
       return if @previewing || Mercury.region != @
       snippet = jQuery(event.target).closest('[data-snippet]')
       if snippet.length
         @snippet = snippet
         Mercury.trigger('show:toolbar', {type: 'snippet', snippet: @snippet}) if @snippet.data('snippet')
 
-    @element.on 'mouseleave', =>
+    @element.on 'mouseout', =>
       return if @previewing
       Mercury.trigger('hide:toolbar', {type: 'snippet', immediately: false})
 

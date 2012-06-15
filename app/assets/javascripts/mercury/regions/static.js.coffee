@@ -24,16 +24,16 @@ class @Mercury.Regions.Static extends Mercury.Region
       return if @previewing || Mercury.region != @
       @execCommand(options.action, options) if options.action
 
-    @element.on 'mousemove', (event) =>
+    @element.on 'mouseenter', =>
       return if @previewing || Mercury.region != @
       snippet = jQuery(event.target).closest('[data-snippet]')
       if snippet.length
         @snippet = snippet
-        Mercury.trigger('show:staticToolbar', {type: 'snippet', snippet: @snippet}) if @snippet.data('snippet')
+        Mercury.trigger('show:toolbar', {type: 'snippet', snippet: @snippet}) if @snippet.data('snippet')
 
-    @element.on 'mouseout', =>
+    @element.on 'mouseleave', =>
       return if @previewing
-      Mercury.trigger('hide:staticToolbar', {type: 'snippet', immediately: false})
+      Mercury.trigger('hide:toolbar', {type: 'snippet', immediately: false})
 
     Mercury.on 'unfocus:regions', (event) =>
       return if @previewing
