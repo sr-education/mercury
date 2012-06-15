@@ -14,14 +14,19 @@ class @Mercury.StaticSnippetToolbar extends Mercury.Toolbar
 
 
   bindEvents: ->
-    Mercury.on 'show:staticToolbar', (event, options) =>
+    @bindReleasableEvent Mercury, 'show:staticToolbar', (event, options) =>
       return unless options.snippet
       options.snippet.mouseout => @hide()
       @show(options.snippet)
 
-    Mercury.on 'hide:staticToolbar', (event, options) =>
+    @bindReleasableEvent Mercury, 'hide:staticToolbar', (event, options) =>
+      Mercury.log("hiding toolbar")
       return unless options.type && options.type == 'snippet'
       @hide(options.immediately)
+      Mercury.log("hid toolbar")
+
+    @bindReleasableEvent jQuery(@document), 'scroll', =>
+      @position() if @visible
 
     @element.mousemove =>
       clearTimeout(@hideTimeout)
@@ -29,9 +34,9 @@ class @Mercury.StaticSnippetToolbar extends Mercury.Toolbar
     @element.mouseout =>
       @hide()
 
-    jQuery(@document).on 'scroll', =>
-      @position() if @visible
-
+  bindReleasableEvent: (target, eventName, handler)->
+    target.on eventName, handler
+    @_boundEvents.push [target, eventName, handler]
 
   show: (@snippet) ->
     Mercury.tooltip.hide()

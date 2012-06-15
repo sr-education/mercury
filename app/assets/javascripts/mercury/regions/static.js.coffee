@@ -19,56 +19,24 @@ class @Mercury.Regions.Static extends Mercury.Region
 
     Mercury.on 'focus:frame', =>
       return if @previewing || Mercury.region != @
+      @focus()
 
     Mercury.on 'action', (event, options) =>
       return if @previewing || Mercury.region != @
       @execCommand(options.action, options) if options.action
 
-    @element.on 'mouseenter', =>
-      return if @previewing || Mercury.region != @
+    @element.on 'mouseenter', (event) =>
+      return if @previewing
       snippet = jQuery(event.target).closest('[data-snippet]')
       if snippet.length
         @snippet = snippet
-        Mercury.trigger('show:toolbar', {type: 'snippet', snippet: @snippet}) if @snippet.data('snippet')
+        Mercury.trigger('show:staticToolbar', {type: 'snippet', snippet: @snippet}) if @snippet.data('snippet')
 
-    @element.on 'mouseleave', =>
+    @element.on 'mouseleave', (event) =>
       return if @previewing
-      Mercury.trigger('hide:toolbar', {type: 'snippet', immediately: false})
-
-    Mercury.on 'unfocus:regions', (event) =>
-      return if @previewing
-      if Mercury.region == @
-        Mercury.trigger('region:blurred', {region: @})
-
-    Mercury.on 'focus:window', (event) =>
-      return if @previewing
-      if Mercury.region == @
-        @element.sortable('destroy')
-        Mercury.trigger('region:blurred', {region: @})
-
-    @element.on 'mouseup', =>
-      return if @previewing
-      Mercury.trigger('region:focused', {region: @})
-
-    @element.on 'dragover', (event) =>
-      return if @previewing
-      event.preventDefault()
-
-    @element.on 'drop', (event) =>
-      return if @previewing || ! Mercury.snippet
-      event.preventDefault()
-
-    jQuery(@document).on 'keydown', (event) =>
-      return if @previewing || Mercury.region != @
-      switch event.keyCode
-        when 90 # undo / redo
-          return unless event.metaKey
-          event.preventDefault()
-          if event.shiftKey then @execCommand('redo') else @execCommand('undo')
-
-    jQuery(@document).on 'keyup', =>
-      return if @previewing || Mercury.region != @
-      Mercury.changes = true
+      console.log(event.target)
+      Mercury.trigger('hide:staticToolbar', {type: 'snippet', immediately: false})
+      
 
   togglePreview: ->
     if !@previewing
