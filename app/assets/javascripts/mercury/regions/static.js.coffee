@@ -22,18 +22,20 @@ class @Mercury.Regions.Static extends Mercury.Region
       @focus()
 
     Mercury.on 'action', (event, options) =>
-      return if @previewing
+      return if @previewing || Mercury.region != @
       @execCommand(options.action, options) if options.action
 
     @element.on 'mouseenter', (event) =>
-      return if @previewing
+      @focus()
+      return if @previewing || Mercury.region != @
+      Mercury.trigger('region:focused', {region: @})
       snippet = jQuery(event.target).closest('[data-snippet]')
       if snippet.length
         @snippet = snippet
         Mercury.trigger('show:staticToolbar', {type: 'snippet', snippet: @snippet}) if @snippet.data('snippet')
 
     @element.on 'mouseleave', (event) =>
-      return if @previewing
+      return if @previewing || Mercury.region != @
       Mercury.trigger('hide:staticToolbar', {type: 'snippet', immediately: false})
       
 
@@ -42,6 +44,11 @@ class @Mercury.Regions.Static extends Mercury.Region
       @element.sortable('destroy')
       @element.removeClass('focus')
     super
+
+
+  focus: ->
+    Mercury.region = @
+    @element.addClass('focus')
 
 
   execCommand: (action, options = {}) ->
