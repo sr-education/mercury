@@ -1,6 +1,7 @@
 class @Mercury.StaticSnippetToolbar extends Mercury.Toolbar
 
   constructor: (@document, @options = {}) ->
+    @_boundEvents = []
     super(@options)
 
 
@@ -8,7 +9,7 @@ class @Mercury.StaticSnippetToolbar extends Mercury.Toolbar
     @element = jQuery('<div>', {class: 'mercury-toolbar mercury-snippet-toolbar', style: 'display:none'})
     @element.appendTo(jQuery(@options.appendTo).get(0) ? 'body')
 
-    for own buttonName, options of Mercury.config.toolbars.staticSnippetable
+    for own buttonName, options of Mercury.config.toolbars.staticSnippets
       button = @buildButton(buttonName, options)
       button.appendTo(@element) if button
 
@@ -20,10 +21,8 @@ class @Mercury.StaticSnippetToolbar extends Mercury.Toolbar
       @show(options.snippet)
 
     @bindReleasableEvent Mercury, 'hide:staticToolbar', (event, options) =>
-      Mercury.log("hiding toolbar")
       return unless options.type && options.type == 'snippet'
       @hide(options.immediately)
-      Mercury.log("hid toolbar")
 
     @bindReleasableEvent jQuery(@document), 'scroll', =>
       @position() if @visible
@@ -70,8 +69,15 @@ class @Mercury.StaticSnippetToolbar extends Mercury.Toolbar
       @element.hide()
       @visible = false
     else
-      @hideTimeout = setTimeout 500, =>
+      @hideTimeout = setTimeout =>
         @element.stop().animate {opacity: 0}, 300, 'easeInOutSine', =>
           @element.hide()
         @visible = false
+      , 500
+
+  release: ->
+    @element.off()
+    @element.remove()
+    target.off(eventName, handler) for [target, eventName, handler] in @_boundEvents
+    @_boundEvents = []
 

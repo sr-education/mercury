@@ -18,11 +18,11 @@ class @Mercury.Regions.Static extends Mercury.Region
     Mercury.on 'mode', (event, options) => @togglePreview() if options.mode == 'preview'
 
     Mercury.on 'focus:frame', =>
-      return if @previewing || Mercury.region != @
+      return if @previewing
       @focus()
 
     Mercury.on 'action', (event, options) =>
-      return if @previewing || Mercury.region != @
+      return if @previewing
       @execCommand(options.action, options) if options.action
 
     @element.on 'mouseenter', (event) =>
@@ -34,7 +34,6 @@ class @Mercury.Regions.Static extends Mercury.Region
 
     @element.on 'mouseleave', (event) =>
       return if @previewing
-      console.log(event.target)
       Mercury.trigger('hide:staticToolbar', {type: 'snippet', immediately: false})
       
 
@@ -56,10 +55,6 @@ class @Mercury.Regions.Static extends Mercury.Region
     undo: -> @content(@history.undo())
 
     redo: -> @content(@history.redo())
-
-    insertSnippet: (options) ->
-      snippet = options.value
-      snippet.getStaticHTML(@element, => @pushHistory())
 
     editSnippet: ->
       return unless @snippet
