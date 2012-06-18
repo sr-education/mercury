@@ -63,6 +63,10 @@ class @Mercury.Regions.Static extends Mercury.Region
 
     redo: -> @content(@history.redo())
 
+    insertSnippet: (options) ->
+      snippet = options.value
+      snippet.getStaticHTML(@element, => @pushHistory())
+
     editSnippet: ->
       return unless @snippet
       snippet = Mercury.Snippet.find(@snippet.data('snippet'))
