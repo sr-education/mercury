@@ -98,7 +98,7 @@ class @Mercury.Modal
         @contentElement.css({height: height - titleHeight, overflow: 'visible'})
         controlHeight = if @contentControl.length then @contentControl.outerHeight() + 10 else 0
         @contentPane.css({height: height - titleHeight - controlHeight - 20})
-        @contentPane.find('.mercury-display-pane').css({width: width - 20})
+        @contentPane.find('.mercury-display-pane').css({width: width - 40})
       else
         @contentElement.css({height: height - titleHeight, overflow: 'auto'})
 
@@ -121,7 +121,7 @@ class @Mercury.Modal
       @contentElement.css({height: height - titleHeight, overflow: 'visible'})
       controlHeight = if @contentControl.length then @contentControl.outerHeight() + 10 else 0
       @contentPane.css({height: height - titleHeight - controlHeight - 20})
-      @contentPane.find('.mercury-display-pane').css({width: width - 20})
+      @contentPane.find('.mercury-display-pane').css({width: width - 40})
     else
       @contentElement.css({height: height - titleHeight, overflow: 'auto'})
 
