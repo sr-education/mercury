@@ -5574,6 +5574,9 @@ Showdown.converter = function() {
     Modal.prototype.resize = function(keepVisible) {
       var height, titleHeight, visibility, width,
         _this = this;
+      if (this.resized) {
+        return;
+      }
       visibility = keepVisible ? 'visible' : 'hidden';
       titleHeight = this.titleElement.outerHeight();
       width = this.contentElement.outerWidth();
@@ -5594,7 +5597,7 @@ Showdown.converter = function() {
       if (height > Mercury.displayRect.fullHeight || this.options.fullHeight) {
         height = Mercury.displayRect.fullHeight;
       }
-      return this.element.stop().animate({
+      this.element.stop().animate({
         left: (Mercury.displayRect.width - width) / 2,
         width: width,
         height: height
@@ -5614,7 +5617,7 @@ Showdown.converter = function() {
             height: height - titleHeight - controlHeight - 20
           });
           return _this.contentPane.find('.mercury-display-pane').css({
-            width: width - 20
+            width: width - 40
           });
         } else {
           return _this.contentElement.css({
@@ -5623,6 +5626,7 @@ Showdown.converter = function() {
           });
         }
       });
+      return this.resized = true;
     };
 
     Modal.prototype.position = function() {
@@ -5661,7 +5665,7 @@ Showdown.converter = function() {
           height: height - titleHeight - controlHeight - 20
         });
         this.contentPane.find('.mercury-display-pane').css({
-          width: width - 20
+          width: width - 40
         });
       } else {
         this.contentElement.css({
@@ -5778,6 +5782,7 @@ Showdown.converter = function() {
       this.element.hide();
       this.overlay.hide();
       this.reset();
+      this.resized = false;
       return this.visible = false;
     };
 
@@ -10201,7 +10206,7 @@ Showdown.converter = function() {
         return _this.focus();
       });
       Mercury.on('action', function(event, options) {
-        if (_this.previewing) {
+        if (_this.previewing || Mercury.region !== _this) {
           return;
         }
         if (options.action) {
@@ -10210,9 +10215,13 @@ Showdown.converter = function() {
       });
       this.element.on('mouseenter', function(event) {
         var snippet;
-        if (_this.previewing) {
+        _this.focus();
+        if (_this.previewing || Mercury.region !== _this) {
           return;
         }
+        Mercury.trigger('region:focused', {
+          region: _this
+        });
         snippet = jQuery(event.target).closest('[data-snippet]');
         if (snippet.length) {
           _this.snippet = snippet;
@@ -10225,7 +10234,7 @@ Showdown.converter = function() {
         }
       });
       return this.element.on('mouseleave', function(event) {
-        if (_this.previewing) {
+        if (_this.previewing || Mercury.region !== _this) {
           return;
         }
         return Mercury.trigger('hide:staticToolbar', {
@@ -10241,6 +10250,11 @@ Showdown.converter = function() {
         this.element.removeClass('focus');
       }
       return Static.__super__.togglePreview.apply(this, arguments);
+    };
+
+    Static.prototype.focus = function() {
+      Mercury.region = this;
+      return this.element.addClass('focus');
     };
 
     Static.prototype.execCommand = function(action, options) {
@@ -10260,6 +10274,14 @@ Showdown.converter = function() {
       },
       redo: function() {
         return this.content(this.history.redo());
+      },
+      insertSnippet: function(options) {
+        var snippet,
+          _this = this;
+        snippet = options.value;
+        return snippet.getStaticHTML(this.element, function() {
+          return _this.pushHistory();
+        });
       },
       editSnippet: function() {
         var snippet;
