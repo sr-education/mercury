@@ -78,7 +78,6 @@ class @Mercury.Modal
 
 
   resize: (keepVisible) ->
-    return if @resized
     visibility = if keepVisible then 'visible' else 'hidden'
 
     titleHeight = @titleElement.outerHeight()
@@ -102,7 +101,6 @@ class @Mercury.Modal
         @contentPane.find('.mercury-display-pane').css({width: width - 40})
       else
         @contentElement.css({height: height - titleHeight, overflow: 'auto'})
-    @resized = true
 
 
   position: ->
@@ -110,7 +108,7 @@ class @Mercury.Modal
 
     @contentPane.css({height: 'auto'}) if @contentPane
     @contentElement.css({height: 'auto'})
-    @element.css({width: 'auto', height: 'auto', display: 'block', visibility: 'hidden'})
+    #@element.css({width: 'auto', height: 'auto', display: 'block', visibility: 'hidden'})
 
     width = @element.width()
     height = @element.height()
@@ -211,5 +209,4 @@ class @Mercury.Modal
     @element.hide()
     @overlay.hide()
     @reset()
-    @resized = false
     @visible = false
