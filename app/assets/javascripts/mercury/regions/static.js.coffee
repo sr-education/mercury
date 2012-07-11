@@ -22,21 +22,27 @@ class @Mercury.Regions.Static extends Mercury.Region
       @focus()
 
     Mercury.on 'action', (event, options) =>
-      return if @previewing #|| Mercury.region != @
+      return if @previewing || Mercury.region != @
       @execCommand(options.action, options) if options.action
 
     @element.on 'mouseenter', (event) =>
-      #@focus()
-      return if @previewing #|| Mercury.region != @
-      # Mercury.trigger('region:focused', {region: @})
+      @focus()
+      return if @previewing || Mercury.region != @
+      Mercury.trigger('region:focused', {region: @})
       snippet = jQuery(event.target).closest('[data-snippet]')
       if snippet.length
         @snippet = snippet
         Mercury.trigger('show:staticToolbar', {type: 'snippet', snippet: @snippet}) if @snippet.data('snippet')
 
     @element.on 'mouseleave', (event) =>
-      return if @previewing #|| Mercury.region != @
+      Mercury.region = @old_region
+      Mercury.trigger('region:focused', {region: @old_region})
+      return if @previewing || Mercury.region != @
       Mercury.trigger('hide:staticToolbar', {type: 'snippet', immediately: false})
+
+    @element.on 'click', (event) =>
+      jQuery(event.target).closest('a').attr('target', '_parent') if @previewing
+      jQuery(event.target).closest('a').attr('target', '_blank') if !@previewing
       
 
   togglePreview: ->
@@ -47,6 +53,7 @@ class @Mercury.Regions.Static extends Mercury.Region
 
 
   focus: ->
+    @old_region = Mercury.region
     Mercury.region = @
     @element.addClass('focus')
 
