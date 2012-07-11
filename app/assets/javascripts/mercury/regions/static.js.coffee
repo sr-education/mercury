@@ -22,12 +22,12 @@ class @Mercury.Regions.Static extends Mercury.Region
       @focus()
 
     Mercury.on 'action', (event, options) =>
-      return if @previewing || Mercury.region != @
+      return if @previewing #|| Mercury.region != @
       @execCommand(options.action, options) if options.action
 
     @element.on 'mouseenter', (event) =>
-      @focus()
-      return if @previewing || Mercury.region != @
+      #@focus()
+      return if @previewing #|| Mercury.region != @
       # Mercury.trigger('region:focused', {region: @})
       snippet = jQuery(event.target).closest('[data-snippet]')
       if snippet.length
