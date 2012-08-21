@@ -252,7 +252,10 @@ class @Mercury.Regions.Full extends Mercury.Region
         element.html("[#{element.data("snippet")}/#{element.data("version")}]")
         element.attr({contenteditable: null, 'data-version': null})
         if saving && Mercury.config.serverParser.radius
-          element.attr({'class': null, 'data-snippet': null})
+          element.attr({'class': null})
+          for attr in element[0].attributes
+            if attr.specified && /^data-/.test(attr.name)
+              element.removeAttr(attr.name)
 
       # get the html before removing the markers
       content = container.html()
