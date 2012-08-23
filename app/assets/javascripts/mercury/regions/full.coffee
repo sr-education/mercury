@@ -256,7 +256,7 @@ class @Mercury.Regions.Full extends Mercury.Region
           remove_attrs = []
           for attr in element[0].attributes
             if attr.specified && (/^data-/).test(attr.name)
-              remove_attrs(attr.name)
+              remove_attrs.push(attr.name)
           for remove_attr in remove_attrs
             element.removeAttr(remove_attr)
 
