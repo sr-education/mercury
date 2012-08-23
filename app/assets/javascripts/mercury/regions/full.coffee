@@ -253,9 +253,13 @@ class @Mercury.Regions.Full extends Mercury.Region
         element.attr({contenteditable: null, 'data-version': null})
         if saving && Mercury.config.serverParser.radius
           element.attr({'class': null})
+          remove_attrs = []
           for attr in element[0].attributes
-            if attr.specified && /^data-/.test(attr.name)
-              element.removeAttr(attr.name)
+            if attr.specified && (/^data-/).test(attr.name)
+              remove_attrs(attr.name)
+          for remove_attr in remove_attrs
+            element.removeAttr(remove_attr)
+
 
       # get the html before removing the markers
       content = container.html()
