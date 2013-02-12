@@ -246,7 +246,7 @@ class @Mercury.Regions.Full extends Mercury.Region
       # replace snippet contents to be an identifier
       if filterSnippets then for element, index in container.find('[data-snippet]')
         element = jQuery(element)
-        if element.data('wrap-content') != 'true'
+        if element.data('wrap_content') != 'true'
           if snippet = Mercury.Snippet.find(element.data("snippet"))
             Mercury.log("adding data to snippet #{snippet.identity}: #{element.html()}")
             snippet.data = element.html()
