@@ -249,10 +249,9 @@ class @Mercury.Regions.Full extends Mercury.Region
         if snippet = Mercury.Snippet.find(element.data("snippet"))
           Mercury.log("adding data to snippet #{snippet.identity}: #{element.html()}")
           snippet.data = element.html()
-        console.log('this is where this is happening!')
-        console.log('what is wrap_content? '+element.attr('wrap_content')+', was it bool or str? '+(element.attr('wrap_content') != 'true'))
-        console.log('what is inner html? '+element.html())
-        if element.attr('wrap_content') != 'true'
+        if element.attr('wrap_content') == 'true'
+          element.html(element.data("innerhtml"))
+        else
           element.html("[#{element.data("snippet")}/#{element.data("version")}]")
         element.attr({contenteditable: null, 'data-version': null})
         if saving && Mercury.config.serverParser.radius
@@ -263,12 +262,9 @@ class @Mercury.Regions.Full extends Mercury.Region
               remove_attrs.push(attr.name)
           for remove_attr in remove_attrs
             element.removeAttr(remove_attr)
-        console.log('NOW what is inner html? '+element.html())
 
       # get the html before removing the markers
       content = container.html()
-      console.log('WHAT IS LOVE? '+content)
-      console.log('BABY DON\'T HURT ME. '+container)
       # remove the markers from the dom
       selection.removeMarker() if includeMarker
 
