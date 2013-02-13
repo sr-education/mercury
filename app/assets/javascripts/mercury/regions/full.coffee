@@ -250,7 +250,8 @@ class @Mercury.Regions.Full extends Mercury.Region
           Mercury.log("adding data to snippet #{snippet.identity}: #{element.html()}")
           snippet.data = element.html()
         if element.attr('wrap_content') == 'true'
-          element.html(element.data("innerhtml"))
+          console.log('this is happening')
+          element.html(_.unescape(element.data("wrappedhtml")))
         else
           element.html("[#{element.data("snippet")}/#{element.data("version")}]")
         element.attr({contenteditable: null, 'data-version': null})
