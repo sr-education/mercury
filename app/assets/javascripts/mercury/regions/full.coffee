@@ -250,13 +250,16 @@ class @Mercury.Regions.Full extends Mercury.Region
           Mercury.log("adding data to snippet #{snippet.identity}: #{element.html()}")
           snippet.data = element.html()
         if element.attr('wrap_content') == 'true'
-          console.log('this is happening')
+          console.log('this is happening better!')
           element.html(_.unescape(element.data("wrappedhtml")))
+          element.removeAttr('data-wrappedhtml')
         else
           element.html("[#{element.data("snippet")}/#{element.data("version")}]")
         element.attr({contenteditable: null, 'data-version': null})
         if saving && Mercury.config.serverParser.radius
           element.attr({'class': null})
+          if element.attr('wrap_content') == 'true'
+            element.html(_.unescape(element.data("wrappedhtml")))
           remove_attrs = []
           for attr in element[0].attributes
             if attr.specified && (/^data-/).test(attr.name)
