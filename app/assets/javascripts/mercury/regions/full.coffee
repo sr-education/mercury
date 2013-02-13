@@ -267,7 +267,8 @@ class @Mercury.Regions.Full extends Mercury.Region
 
       # get the html before removing the markers
       content = container.html()
-
+      console.log('WHAT IS LOVE? '+content)
+      console.log('BABY DON\'T HURT ME. '+container)
       # remove the markers from the dom
       selection.removeMarker() if includeMarker
 
