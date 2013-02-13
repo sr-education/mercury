@@ -55,9 +55,6 @@ class @Mercury.Region
       if filterSnippets then for snippet in container.find('[data-snippet]')
         snippet = jQuery(snippet)
         snippet.attr({contenteditable: null, 'data-version': null})
-        if snippet.attr('wrap_content') == 'true'
-          console.log('this is correct?')
-          snippet.data('wrappedhtml', _.escape(snippet.html()))
         snippet.html("[#{snippet.data('snippet')}]")
 
       return container.html()

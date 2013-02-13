@@ -216,7 +216,7 @@ class @Mercury.Regions.Full extends Mercury.Region
         element.contentEditable = false
         element = jQuery(element)
         if snippet = Mercury.Snippet.find(element.data('snippet'))
-          unless element.data('version')
+          unless element.data('version') || element.attr('wrap_content') == 'true'
             try
               version = parseInt(element.html().match(/\/(\d+)\]/)[1])
               if version
@@ -224,6 +224,9 @@ class @Mercury.Regions.Full extends Mercury.Region
                 element.attr({'data-version': version})
                 element.html(snippet.data)
             catch error
+          if element.attr('wrap_content') == 'true'
+            console.log('this is correct?')
+            element.data('wrappedhtml', _.escape(element.html()))
 
       # set the html
       @element.html(container.html())
