@@ -246,12 +246,14 @@ class @Mercury.Regions.Full extends Mercury.Region
       # replace snippet contents to be an identifier
       if filterSnippets then for element, index in container.find('[data-snippet]')
         element = jQuery(element)
-        if element.attr('wrap_content') != 'true'
-          if snippet = Mercury.Snippet.find(element.data("snippet"))
-            Mercury.log("adding data to snippet #{snippet.identity}: #{element.html()}")
-            snippet.data = element.html()
-          element.html("[#{element.data("snippet")}/#{element.data("version")}]")
-          element.attr({contenteditable: null, 'data-version': null})
+        if snippet = Mercury.Snippet.find(element.data("snippet"))
+          Mercury.log("adding data to snippet #{snippet.identity}: #{element.html()}")
+          snippet.data = element.html()
+        console.log('this is where this is happening!')
+        console.log('what is wrap_content? '+element.attr('wrap_content'))
+        console.log('what is inner html? '+element.html())
+        element.html("[#{element.data("snippet")}/#{element.data("version")}]")
+        element.attr({contenteditable: null, 'data-version': null})
         if saving && Mercury.config.serverParser.radius
           element.attr({'class': null})
           remove_attrs = []
