@@ -225,8 +225,9 @@ class @Mercury.Regions.Full extends Mercury.Region
                 element.html(snippet.data)
             catch error
           if element.attr('wrap_content') == 'true'
-            console.log('this is correct?')
+            console.log('this is correct? '+element.html()+", other thing: "+snippet.data)
             element.data('wrappedhtml', _.escape(element.html()))
+            element.html(snippet.data)
 
       # set the html
       @element.html(container.html())
