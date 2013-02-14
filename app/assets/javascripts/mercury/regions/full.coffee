@@ -225,7 +225,6 @@ class @Mercury.Regions.Full extends Mercury.Region
                 element.html(snippet.data)
             catch error
           if element.attr('wrap_content') == 'true'
-            console.log('this is correct? '+element.html()+", other thing: "+snippet.data)
             element.attr('data-wrappedhtml', _.escape(element.html()))
             element.html(snippet.data)
 
@@ -254,7 +253,6 @@ class @Mercury.Regions.Full extends Mercury.Region
           Mercury.log("adding data to snippet #{snippet.identity}: #{element.html()}")
           snippet.data = element.html()
         if element.attr('wrap_content') == 'true'
-          console.log('this is happening better!')
           element.html(_.unescape(element.data("wrappedhtml")))
           element.removeAttr('data-wrappedhtml')
         else
