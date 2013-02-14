@@ -216,7 +216,7 @@ class @Mercury.Regions.Full extends Mercury.Region
         element.contentEditable = false
         element = jQuery(element)
         if snippet = Mercury.Snippet.find(element.data('snippet'))
-          unless element.data('version')
+          unless element.data('version') || element.attr('wrap_content') == 'true'
             try
               version = parseInt(element.html().match(/\/(\d+)\]/)[1])
               if version
@@ -224,6 +224,9 @@ class @Mercury.Regions.Full extends Mercury.Region
                 element.attr({'data-version': version})
                 element.html(snippet.data)
             catch error
+          if element.attr('wrap_content') == 'true'
+            element.attr('data-wrappedhtml', _.escape(element.html()))
+            element.html(snippet.data)
 
       # set the html
       @element.html(container.html())
@@ -249,10 +252,16 @@ class @Mercury.Regions.Full extends Mercury.Region
         if snippet = Mercury.Snippet.find(element.data("snippet"))
           Mercury.log("adding data to snippet #{snippet.identity}: #{element.html()}")
           snippet.data = element.html()
-        element.html("[#{element.data("snippet")}/#{element.data("version")}]")
+        if element.attr('wrap_content') == 'true'
+          element.html(_.unescape(element.data("wrappedhtml")))
+          element.removeAttr('data-wrappedhtml')
+        else
+          element.html("[#{element.data("snippet")}/#{element.data("version")}]")
         element.attr({contenteditable: null, 'data-version': null})
         if saving && Mercury.config.serverParser.radius
           element.attr({'class': null})
+          if element.attr('wrap_content') == 'true'
+            element.html(_.unescape(element.data("wrappedhtml")))
           remove_attrs = []
           for attr in element[0].attributes
             if attr.specified && (/^data-/).test(attr.name)
@@ -260,10 +269,8 @@ class @Mercury.Regions.Full extends Mercury.Region
           for remove_attr in remove_attrs
             element.removeAttr(remove_attr)
 
-
       # get the html before removing the markers
       content = container.html()
-
       # remove the markers from the dom
       selection.removeMarker() if includeMarker
 
